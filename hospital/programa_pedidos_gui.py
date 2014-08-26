@@ -9,8 +9,8 @@ from Tkinter import *
 import tkFileDialog, tkMessageBox
 from idlelib.WidgetRedirector import WidgetRedirector
 
-import sys, os
-import programa_pedidos_bl as programa_pedidos
+import sys, os, traceback
+import programa_pedidos_bl as programa_pedidos, programa_pedidos_common as common
 
 
 def centrar(ventana):
@@ -82,13 +82,13 @@ def calcCommand(unico,pendientes,mercurio,text):
         tkMessageBox.showerror(u"No se encontró fichero",u"Seleccione un fichero mercurio!")
 
 
-    elif 0!=programa_pedidos.readvalidate(unico):
+    elif 0!=common.readvalidate(unico):
         tkMessageBox.showerror(u"Problema de lectura",u"No se puede leer el fichero único! Pruebe con otro archivo.")
 
-    elif 0!=programa_pedidos.readvalidate(pendientes):
+    elif 0!=common.readvalidate(pendientes):
         tkMessageBox.showerror(u"Problema de lectura",u"No se puede leer el archivo de pedidos pendientes! Pruebe con otro archivo.")
 
-    elif 0!=programa_pedidos.readvalidate(mercurio):
+    elif 0!=common.readvalidate(mercurio):
         tkMessageBox.showerror(u"Problema de lectura",u"No se puede leer el fichero mercurio! Pruebe con otro archivo.")
 
     # if all files are valid, procede
@@ -101,14 +101,36 @@ def calcCommand(unico,pendientes,mercurio,text):
                         filetypes=[('Microsoft Excel 2007', '.%s'%outputext)])
 
         if not output: tkMessageBox.showerror("Error",u"Tiene que especificar un archivo!, vuelva a intentarlo escogiendo uno.")
-        elif not programa_pedidos.wincheckwriteperm(output):
+        elif not common.wincheckwriteperm(output):
             tkMessageBox.showerror("Error",u"El archivo está bloqueado por otro programa! Vuelva a intentarlo cuando no esté bloqueado.")
         else:
 
-            def log(*args, **kwargs):
-                kwargs.get('text').insert(END,' '.join(args)+'\n')
+            def log(level,*args, **kwargs):
+                if level=="ERROR":
+                    kwargs.get('text').insert(END,"ERROR: "+' '.join(args)+'\n')
+                else: kwargs.get('text').insert(END,' '.join(args)+'\n')
                 v.update_idletasks()
-            programa_pedidos.processfiles(unico,pendientes,mercurio,output, log=lambda *args: log(*args,text=text))
+
+            try:
+                programa_pedidos.processfiles(unico,pendientes,mercurio,output, log=lambda *args: log(*args,text=text))
+            except Exception as e:
+                log("ERROR",unicode(e),text=text)
+
+                functionmap = {
+                 'writecrossxls': u"Error al escribir el archivo de cruce",
+                 'parseCustomFile': u'Error al leer el archivo mercurio',
+                 'xls2sqlite': lambda e: u'Error al leer el archivo %s' % e.file 
+                }
+
+                tb= sys.exc_info()[2]; errmsg =  u'Se produjo un error al procesar los archivos'
+                for t in traceback.extract_tb(tb):
+                    if t[2] in functionmap: 
+                        r= functionmap[t[2]]
+                        if hasattr(r,"__call__"): errmsg = r(e)
+                        else: errmsg = r
+
+                tkMessageBox.showerror(u"Fallo al procesar",errmsg+u'\n\nMensaje de error: %s'%unicode(e))
+                return
 
             msg_exito = u'Proceso de cruce finalizado con éxito!'
             tkMessageBox.showinfo('Proceso finalizado',msg_exito)
@@ -119,7 +141,7 @@ if __name__=="__main__":
 
     # If using pyinstaller, static assets are in sys._MEIPASS instead of .
     try: base_path= sys._MEIPASS
-    except Exception: base_path = os.path.abspath(".")
+    except Exception: base_path = os.path.abspath("./compile")
 
 
     # define root window and its properties
@@ -127,7 +149,7 @@ if __name__=="__main__":
     v.title("Programa de cruces")
     v.resizable(0,0)
     if base_path:
-        try: v.iconbitmap('@'+os.path.join(base_path,'icon-0.xbm'))
+        try: v.iconbitmap(os.path.join(base_path,'icon.ico'))
         except TclError: pass
 
     v.grid()

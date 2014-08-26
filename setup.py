@@ -11,16 +11,17 @@ setup(
     version='0.1.0',
     author='Pablo Cabeza',
     author_email='josepablocg@gmail.com',
-    # packages=['hospital'],
+    # packages=['programa_pedidos_bl'],
+    # package_dir={'programa_pedidos_bl':'hospital'}
 
-    # scripts=['hospital/programa_pedidos.py'],
+    # scripts=['hospital/programa_pedidos_gui.py'],
     description='Programa para hospital de Granada',
 
     install_requires=[
        "xlrd",
        "xlsxwriter",
-	   'pywin32',
-	   'pyinstaller'
+	#    'pywin32',
+	#    'pyinstaller'
        # "chardet"
     ],
 )
