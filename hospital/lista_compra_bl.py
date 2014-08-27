@@ -118,11 +118,12 @@ def processfiles(unico,pendientes,output,log=print,outputext="xlsx"):
         raise
 
     query = '''
-        SELECT cod_nac, compute_0017, cod_ec
+        SELECT DISTINCT cod_nac, compute_0017, cod_ec
 
-        FROM (pedidos_pendientes INNER JOIN lista_de_compra 
-                ON pedidos_pendientes.GC=lista_de_compra.cod_ec and pedidos_pendientes.referencia_fabricante=lista_de_compra.cod_nac
-             )
+        FROM lista_de_compra INNER JOIN pedidos_pendientes
+            ON pedidos_pendientes.GC=lista_de_compra.cod_ec
+                and
+                pedidos_pendientes.referencia_fabricante=lista_de_compra.cod_nac
     '''
 	# ..., cod_nac,compute_0017,cod_ec
 	# pedidos_pendientes.GC=lista_de_compra.cod_ec and pedidos_pendientes.referencia_fabricante=lista_de_compra.cod_nac

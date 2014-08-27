@@ -3,6 +3,7 @@ import argparse, os, shutil
 from subprocess import call
 
 parser = argparse.ArgumentParser()
+parser.add_argument('target',type=unicode,nargs='?')
 parser.add_argument('-m','--make-spec',action='store_true',default=False)
 parser.add_argument('-s','--spec-file',action='store_true',default=False)
 parser.add_argument('-c','--clean',action='store_true', default=False)
@@ -18,8 +19,12 @@ if args.clean:
         if os.path.exists(f): shutil.rmtree(f)
     exit(0)
 
-script = "hospital\\programa_pedidos_gui.py"
-spec = "programa_pedidos_gui.spec"
+if args.target == 'programa_pedidos':
+	script = "hospital\\programa_pedidos_gui.py"
+	spec = "programa_pedidos_gui.spec"
+elif args.target == 'lista_compra':
+	script = "hospital\\lista_compra_gui.py"
+	spec = "lista_compra_gui.spec"
 
 command = [baseprogram]+(arguments+[script] if not args.spec_file else [spec])
 
