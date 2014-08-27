@@ -174,3 +174,68 @@ def readvalidate(file):
     if not path.exists(file): return 1
     elif not file: return 2
     else: return 0
+
+
+##############################
+# Write xls file from a cursor
+##############################
+
+# TODO: improve width system
+def writecxlsfromsqlite(output,c,colstyle={},formula_cells={},log=print):
+    '''Write the final result file from a db cursor'''
+
+    workbook = xlsxw.Workbook(output)
+    worksheet = workbook.add_worksheet('Sheet 1')
+
+    # header style
+    hstyle = workbook.add_format({'bold': True, 'bg_color': 'gray'})
+
+    # get, prepare  and write header row
+    description = [i[0] for i in c.description]
+    headers=[ i.replace("_"," ").decode('utf8') for i in description]
+    for i,v in enumerate(headers):
+        worksheet.write(0,i,v,hstyle)
+    worksheet.freeze_panes(1, 0) # freeze first row and no column
+
+
+    # prepare column-width array to be computed during processing
+    colwidth = [len(i) for i in headers]
+
+    # process each row of data
+    for i,r in enumerate(c):
+        l = list(r)
+
+        # process and write the row
+        for j,v in enumerate(l):
+
+            # some meta information update
+            colwidth[j] = max(colwidth[j],len(unicode(v)))
+            style = workbook.add_format( colstyle.get(headers[j],{}) )
+
+            # if it is a formula cell, do an special processing
+            if description[j] in formula_cells:
+                f = formula_cells[description[j]] # get formula description
+                # get the actual value for paramenters
+                paramsi = list(f["parameters"]); params = list(f["parameters"])
+                for k,p in enumerate(params):
+                    paramsi[k]= description.index(p)
+                    params[k]= l[paramsi[k]]
+                    paramsi[k] = xlrd.cellname(i+1,paramsi[k])
+
+                # Lets try to compute the value
+                try: v = f["valor"](*params) # compuete value for cell
+                except TypeError: v='#VALOR!'
+
+                l[j] = v # update cell value
+
+                # write actual formula and value
+                worksheet.write_formula(i+1,j,f["formula"].format(*paramsi),value=v,cell_format=style)
+
+            # if it is a normat cell
+            else: worksheet.write(i+1,j,v,style)
+
+    # update cells widths
+    for i,cw in enumerate(colwidth):
+        if cw!=None: worksheet.set_column(i,i,cw)
+
+    workbook.close()
