@@ -31,20 +31,26 @@ XLRD_TYPES = [ "INT", "TEXT", "BOOLEAN", "REAL", "REAL", "TEXT" ]
 # Auxiliary methods for db naming
 #################################
 
-def nfunc(i,v):
-    "naming method for db table columns"
-    return unicode(v).replace(' ','_').lower() if v else 'row%d' % i
+def nfunc(i,v,collision_dict=None):
+    "naming method for db table columns, collision_dict is used to rename duplacate names"
+    name = unicode(v).replace(' ','_').lower() if v else 'row%d' % i
+    if collision_dict is None: pass
+    elif name in collision_dict:
+        collision_dict[name] += 1
+        name += u'_%d' % collision_dict[name]
+    else: collision_dict[name] = 0
+    return name
 
-def tfunc(fname):
+def tfunc(fname,collision_dict=None):
     "naming method for db tables"
-    return path.splitext(path.basename(nfunc(0,fname)))[0]
+    return path.splitext(path.basename(nfunc(0,fname,collision_dict=collision_dict)))[0]
 
 
 #####################
 # Parsing input files
 #####################
 
-# TODO: check if row or table names already exists, it will fail otherwise
+# TODO: check if table names already exists, it will fail otherwise
 # TODO: save format to be used in output
 def xls2sqlite(xlsfile,dbfile,table=None):
     "Dump an xls file column wise to a sqlite database"
@@ -62,11 +68,12 @@ def xls2sqlite(xlsfile,dbfile,table=None):
             types[i][XLRD_ORDER.index(c.ctype)]+=1
 
     # render create statement from the infered types using first row as column names
-    header = ['"%s"'%nfunc(i,v) for i,v in enumerate(sh.row_values(0))]
+    colld = {} # collision dict for duplicate collumns
+    header = ['"%s"'%nfunc(i,v,collision_dict=colld) for i,v in enumerate(sh.row_values(0))]
     definition = ['%s %s' % (n,
                     XLRD_TYPES[types[i].index(max(types[i]))]) for i,n in enumerate(header)]
     create = CREATE % (table,','.join(definition))
-    insert = INSERT.format(table,','.join(['"primary_id"']+header))
+    insert = INSERT.format(table,','.join(['"primary_id"']+header).replace('%','%%'))
 
 
     dbfile.execute(create) # execute create

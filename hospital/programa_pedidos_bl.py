@@ -110,7 +110,7 @@ def processfiles(unico,pendientes,mercurio,output,log=print,outputext="xlsx"):
     except Exception as e:
         setattr(e,"file",u"fichero único")
         raise
-    
+
     log("INFO",u"Leyendo %s..." % pendientes)
     try: common.xls2sqlite(pendientes,conn,table="pedidos_pendientes")
     except Exception as e:
@@ -148,7 +148,7 @@ def processfiles(unico,pendientes,mercurio,output,log=print,outputext="xlsx"):
 
     log("INFO",u"Escribiendo el archivo %s..." % output)
     writecrossxls(output,c,log=log)
-    
+
     # some cleanup
     log("INFO",u"Eliminando archivos temporales...")
     conn.close()

@@ -114,17 +114,18 @@ def calcCommand(unico,pendientes,mercurio,text):
             try:
                 programa_pedidos.processfiles(unico,pendientes,mercurio,output, log=lambda *args: log(*args,text=text))
             except Exception as e:
+                if os.isatty(sys.stdin.fileno()): traceback.print_exc()
                 log("ERROR",unicode(e),text=text)
 
                 functionmap = {
                  'writecrossxls': u"Error al escribir el archivo de cruce",
                  'parseCustomFile': u'Error al leer el archivo mercurio',
-                 'xls2sqlite': lambda e: u'Error al leer el archivo %s' % e.file 
+                 'xls2sqlite': lambda e: u'Error al leer el archivo %s' % e.file
                 }
 
                 tb= sys.exc_info()[2]; errmsg =  u'Se produjo un error al procesar los archivos'
                 for t in traceback.extract_tb(tb):
-                    if t[2] in functionmap: 
+                    if t[2] in functionmap:
                         r= functionmap[t[2]]
                         if hasattr(r,"__call__"): errmsg = r(e)
                         else: errmsg = r
