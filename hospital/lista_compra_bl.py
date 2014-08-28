@@ -36,10 +36,11 @@ def processfiles(unico,pendientes,output,log=print,outputext="xlsx"):
     query = '''
         SELECT DISTINCT cod_nac, compute_0017, cod_ec
 
-        FROM lista_de_compra INNER JOIN pedidos_pendientes
+        FROM lista_de_compra LEFT JOIN pedidos_pendientes
             ON pedidos_pendientes.GC=lista_de_compra.cod_ec
                 and
                 pedidos_pendientes.referencia_fabricante=lista_de_compra.cod_nac
+        WHERE pedidos_pendientes.primary_id IS NULL
     '''
 
     log("INFO",u"Obteniendo cruces de los archivos...")
