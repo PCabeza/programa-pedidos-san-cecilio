@@ -10,16 +10,9 @@ import tkFileDialog, tkMessageBox
 from idlelib.WidgetRedirector import WidgetRedirector
 
 import sys, os, traceback
+
 import programa_pedidos_bl as programa_pedidos, programa_pedidos_common as common
-
-
-def centrar(ventana):
-    ventana.update_idletasks()
-    w=ventana.winfo_width()
-    h=ventana.winfo_height()
-    extraW=ventana.winfo_screenwidth()-w
-    extraH=ventana.winfo_screenheight()-h
-    ventana.geometry("%dx%d%+d%+d" % (w,h,extraW/2,extraH/2))
+from hospital_gui_common import *
 
 
 class ReadOnlyEntry(Entry):
@@ -105,17 +98,11 @@ def calcCommand(unico,pendientes,mercurio,text):
             tkMessageBox.showerror("Error",u"El archivo está bloqueado por otro programa! Vuelva a intentarlo cuando no esté bloqueado.")
         else:
 
-            def log(level,*args, **kwargs):
-                if level=="ERROR":
-                    kwargs.get('text').insert(END,"ERROR: "+' '.join(args)+'\n')
-                else: kwargs.get('text').insert(END,' '.join(args)+'\n')
-                v.update_idletasks()
-
             try:
-                programa_pedidos.processfiles(unico,pendientes,mercurio,output, log=lambda *args: log(*args,text=text))
+                programa_pedidos.processfiles(unico,pendientes,mercurio,output, log=lambda *args: textwidgetlog(*args,text=text))
             except Exception as e:
                 if os.isatty(sys.stdin.fileno()): traceback.print_exc()
-                log("ERROR",unicode(e),text=text)
+                textwidgetlog("ERROR",unicode(e),text=text)
 
                 functionmap = {
                  'writecrossxls': u"Error al escribir el archivo de cruce",
@@ -135,7 +122,38 @@ def calcCommand(unico,pendientes,mercurio,text):
 
             msg_exito = u'Proceso de cruce finalizado con éxito!'
             tkMessageBox.showinfo('Proceso finalizado',msg_exito)
-            log(msg_exito,text=text)
+            textwidgetlog(msg_exito,text=text)
+
+class PedidosPendientesFrame(Frame):
+    def __init__(self,*args,**kwargs):
+        Frame.__init__(self,*args,**kwargs)
+
+        self.grid()
+
+        # set an offset of rows to show file inmputs
+        brow=1
+        for i in range(brow): self.grid_rowconfigure(i,weight=0,minsize=25)
+
+        # show actual file inputs widgets
+        unico = FileFrame(self,u"Fichero único",dtitle=u"Seleccione el fichero único",row=brow)
+        pendientes = FileFrame(self,u"Pedidos pendientes",dtitle=u"Seleccione el fichero de pedidos pendientes",row=brow+1)
+        mercurio = FileFrame(self,u"Fichero mercurio",dtitle=u"Seleccione el fichero mercurio",row=brow+2)
+
+        # configure input widgets rows
+        for i in range(3): self.grid_rowconfigure(brow+i,weight=0,pad=5)
+
+
+        # Console log widget to show feedback to the user
+        text = ReadOnlyText(self,height=11)
+        text.grid(row=0,column=4,rowspan=5,padx=20, pady=10)
+
+
+        # Configure "cross files" button with callback
+        calcular = Button(self,text=u"Cruzar archivos",
+                    command=lambda u=unico,p=pendientes,m=mercurio,t=text: calcCommand(u,p,m,t))
+        calcular.grid(row=brow+3,column=0,columnspan=3,sticky='E')
+        self.grid_rowconfigure(brow+3, weight=1)
+
 
 
 if __name__=="__main__":
@@ -153,32 +171,8 @@ if __name__=="__main__":
         try: v.iconbitmap(os.path.join(base_path,'icon.ico'))
         except TclError: pass
 
-    v.grid()
-
-    # set an offset of rows to show file inmputs
-    brow=1
-    for i in range(brow): v.grid_rowconfigure(i,weight=0,minsize=25)
-
-    # show actual file inputs widgets
-    unico = FileFrame(v,u"Fichero único",dtitle=u"Seleccione el fichero único",row=brow)
-    pendientes = FileFrame(v,u"Pedidos pendientes",dtitle=u"Seleccione el fichero de pedidos pendientes",row=brow+1)
-    mercurio = FileFrame(v,u"Fichero mercurio",dtitle=u"Seleccione el fichero mercurio",row=brow+2)
-
-    # configure input widgets rows
-    for i in range(3): v.grid_rowconfigure(brow+i,weight=0,pad=5)
-
-
-    # Console log widget to show feedback to the user
-    text = ReadOnlyText(v,height=11)
-    text.grid(row=0,column=4,rowspan=5,padx=20, pady=10)
-
-
-    # Configure "cross files" button with callback
-    calcular = Button(v,text=u"Cruzar archivos",
-                command=lambda u=unico,p=pendientes,m=mercurio,t=text: calcCommand(u,p,m,t))
-    calcular.grid(row=brow+3,column=0,columnspan=3,sticky='E')
-    v.grid_rowconfigure(brow+3, weight=1)
-
+    mainframe = PedidosPendientesFrame(v)
+    mainframe.pack()
 
     # Actual loop and center widgets
     centrar(v)

@@ -10,17 +10,9 @@ import tkFileDialog, tkMessageBox
 from idlelib.WidgetRedirector import WidgetRedirector
 
 import sys, os, traceback
+
 import lista_compra_bl as programa_pedidos, programa_pedidos_common as common
-
-
-def centrar(ventana):
-    ventana.update_idletasks()
-    w=ventana.winfo_width()
-    h=ventana.winfo_height()
-    extraW=ventana.winfo_screenwidth()-w
-    extraH=ventana.winfo_screenheight()-h
-    ventana.geometry("%dx%d%+d%+d" % (w,h,extraW/2,extraH/2))
-
+from hospital_gui_common import *
 
 class ReadOnlyEntry(Entry):
     def __init__(self, *args, **kwargs):
@@ -99,26 +91,19 @@ def calcCommand(listacompra,pendientes,text):
         elif not common.wincheckwriteperm(output):
             tkMessageBox.showerror("Error",u"El archivo está bloqueado por otro programa! Vuelva a intentarlo cuando no esté bloqueado.")
         else:
-
-            def log(level,*args, **kwargs):
-                if level=="ERROR":
-                    kwargs.get('text').insert(END,"ERROR: "+' '.join(args)+'\n')
-                else: kwargs.get('text').insert(END,' '.join(args)+'\n')
-                v.update_idletasks()
-
             try:
-                programa_pedidos.processfiles(listacompra,pendientes,output, log=lambda *args: log(*args,text=text))
+                programa_pedidos.processfiles(listacompra,pendientes,output, log=lambda *args: textwidgetlog(*args,text=text))
             except Exception as e:
-                log("ERROR",unicode(e),text=text)
+                textwidgetlog("ERROR",unicode(e),text=text)
 
                 functionmap = {
                  'writecrossxls': u"Error al escribir el archivo de cruce",
-                 'xls2sqlite': lambda e: u'Error al leer el archivo %s' % e.file 
+                 'xls2sqlite': lambda e: u'Error al leer el archivo %s' % e.file
                 }
 
                 tb= sys.exc_info()[2]; errmsg =  u'Se produjo un error al procesar los archivos'
                 for t in traceback.extract_tb(tb):
-                    if t[2] in functionmap: 
+                    if t[2] in functionmap:
                         r= functionmap[t[2]]
                         if hasattr(r,"__call__"): errmsg = r(e)
                         else: errmsg = r
@@ -128,7 +113,34 @@ def calcCommand(listacompra,pendientes,text):
 
             msg_exito = u'Proceso de cruce finalizado con éxito!'
             tkMessageBox.showinfo('Proceso finalizado',msg_exito)
-            log(msg_exito,text=text)
+            textwidgetlog("INFO",msg_exito,text=text)
+
+class ListaCompraFrame(Frame):
+    def __init__(self,*args,**kwargs):
+        Frame.__init__(self,*args,**kwargs)
+
+        # set an offset of rows to show file inmputs
+        brow=1
+        for i in range(brow): self.grid_rowconfigure(i,weight=0,minsize=25)
+
+        # show actual file inputs widgets
+        listacompra = FileFrame(self,u"Lista compra",dtitle=u"Seleccione el fichero lista de compra",row=brow)
+        pendientes = FileFrame(self,u"Pedidos pendientes",dtitle=u"Seleccione el fichero de pedidos pendientes",row=brow+1)
+
+        # configure input widgets rows
+        for i in range(2): self.grid_rowconfigure(brow+i,weight=0,pad=5)
+
+
+        # Console log widget to show feedback to the user
+        text = ReadOnlyText(self,height=11)
+        text.grid(row=0,column=4,rowspan=4,padx=20, pady=10)
+
+
+        # Configure "cross files" button with callback
+        calcular = Button(self,text=u"Cruzar archivos",
+                    command=lambda u=listacompra,p=pendientes,t=text: calcCommand(u,p,t))
+        calcular.grid(row=brow+2,column=0,columnspan=3,sticky='E')
+        self.grid_rowconfigure(brow+2, weight=1)
 
 
 if __name__=="__main__":
@@ -136,7 +148,6 @@ if __name__=="__main__":
     # If using pyinstaller, static assets are in sys._MEIPASS instead of .
     try: base_path= sys._MEIPASS
     except Exception: base_path = os.path.abspath("./compile")
-
 
     # define root window and its properties
     v = Tk()
@@ -146,31 +157,9 @@ if __name__=="__main__":
         try: v.iconbitmap(os.path.join(base_path,'icon.ico'))
         except TclError: pass
 
-    v.grid()
-
-    # set an offset of rows to show file inmputs
-    brow=1
-    for i in range(brow): v.grid_rowconfigure(i,weight=0,minsize=25)
-
-    # show actual file inputs widgets
-    listacompra = FileFrame(v,u"Lista compra",dtitle=u"Seleccione el fichero lista de compra",row=brow)
-    pendientes = FileFrame(v,u"Pedidos pendientes",dtitle=u"Seleccione el fichero de pedidos pendientes",row=brow+1)
-
-    # configure input widgets rows
-    for i in range(2): v.grid_rowconfigure(brow+i,weight=0,pad=5)
-
-
-    # Console log widget to show feedback to the user
-    text = ReadOnlyText(v,height=11)
-    text.grid(row=0,column=4,rowspan=4,padx=20, pady=10)
-
-
-    # Configure "cross files" button with callback
-    calcular = Button(v,text=u"Cruzar archivos",
-                command=lambda u=listacompra,p=pendientes,t=text: calcCommand(u,p,t))
-    calcular.grid(row=brow+2,column=0,columnspan=3,sticky='E')
-    v.grid_rowconfigure(brow+2, weight=1)
-
+    # v.grid()
+    mainframe = ListaCompraFrame(v)
+    mainframe.pack()
 
     # Actual loop and center widgets
     centrar(v)

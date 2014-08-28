@@ -20,6 +20,7 @@ setup(
     install_requires=[
        "xlrd",
        "xlsxwriter",
+       "pyttk"
 	#    'pywin32',
 	#    'pyinstaller'
        # "chardet"
