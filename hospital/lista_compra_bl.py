@@ -14,7 +14,7 @@ import programa_pedidos_common as common
 # Actual main processing of files
 #################################
 
-def processfiles(unico,pendientes,output,log=print,outputext="xlsx"):
+def processfiles(unico,pendientes,compra,output,log=print,outputext="xlsx"):
     '''Main process of reading files and writing the output'''
     temp = tempfile.mkstemp()
     log("INFO",u"Creando archivo sqlite temporal:",temp[1])
@@ -22,24 +22,32 @@ def processfiles(unico,pendientes,output,log=print,outputext="xlsx"):
 
     # Process both xls files, if any error happens capture exception and add xls file
     log("INFO",u"Leyendo %s..." % unico)
-    try: common.xls2sqlite(unico,conn,table="lista_de_compra")
+    try: common.xls2sqlite(unico,conn,table="fichero_unico")
     except Exception as e:
         setattr(e,"file",u"fichero único")
         raise
-    
+
     log("INFO",u"Leyendo %s..." % pendientes)
     try: common.xls2sqlite(pendientes,conn,table="pedidos_pendientes")
     except Exception as e:
         setattr(e,"file",u"pedidos pendientes")
         raise
 
-    query = '''
-        SELECT DISTINCT cod_nac, compute_0017, cod_ec
+    log("INFO",u"Leyendo %s..." % unico)
+    try: common.xls2sqlite(compra,conn,table="lista_de_compra")
+    except Exception as e:
+        setattr(e,"file",u"lista compra")
+        raise
 
-        FROM lista_de_compra LEFT JOIN pedidos_pendientes
-            ON pedidos_pendientes.GC=lista_de_compra.cod_ec
-                and
-                pedidos_pendientes.referencia_fabricante=lista_de_compra.cod_nac
+    query = '''
+        SELECT DISTINCT cod_nac, compute_0017, cod_ec, fichero_unico.observaciones
+
+        FROM
+        (fichero_unico INNER JOIN lista_de_compra ON codigo_articulo_hsc=lista_de_compra.cod_nac)
+        LEFT JOIN pedidos_pendientes
+        ON pedidos_pendientes.GC=lista_de_compra.cod_ec
+            and
+            pedidos_pendientes.referencia_fabricante=lista_de_compra.cod_nac
         WHERE pedidos_pendientes.primary_id IS NULL
     '''
 
@@ -49,7 +57,7 @@ def processfiles(unico,pendientes,output,log=print,outputext="xlsx"):
 
     log("INFO",u"Escribiendo el archivo %s..." % output)
     common.writecxlsfromsqlite(output,c,log=log)
-    
+
     # some cleanup
     log("INFO",u"Eliminando archivos temporales...")
     conn.close()

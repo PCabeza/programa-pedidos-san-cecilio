@@ -58,21 +58,28 @@ class ReadOnlyText(Text):
         self.insert = self.redirector.register("insert", lambda *args, **kw: "break")
         self.delete = self.redirector.register("delete", lambda *args, **kw: "break")
 
-def calcCommand(listacompra,pendientes,text):
+def calcCommand(listacompra,unico,pendientes,text):
     '''Callback for the "cross files" button that validates files and process them'''
 
-    listacompra=listacompra.file.get(); pendientes=pendientes.file.get();
+    listacompra=listacompra.file.get(); pendientes=pendientes.file.get(); unico=unico.file.get()
 
     # Some file validation
     if not listacompra:
         tkMessageBox.showerror(u"No se encontró fichero",u"Seleccione lista de compra!")
 
+    elif not unico:
+        tkMessageBox.showerror(u"No se encontró fichero",u"Seleccione el fichero único!")
+
     elif not pendientes:
         tkMessageBox.showerror(u"No se encontró fichero",u"Seleccione un fichero de pedidos pendientes!")
 
 
+
     elif 0!=common.readvalidate(listacompra):
         tkMessageBox.showerror(u"Problema de lectura",u"No se puede leer la lista de compra! Pruebe con otro archivo.")
+
+    elif 0!=common.readvalidate(unico):
+        tkMessageBox.showerror(u"Problema de lectura",u"No se puede leer el fichero único! Pruebe con otro archivo.")
 
     elif 0!=common.readvalidate(pendientes):
         tkMessageBox.showerror(u"Problema de lectura",u"No se puede leer el archivo de pedidos pendientes! Pruebe con otro archivo.")
@@ -92,7 +99,7 @@ def calcCommand(listacompra,pendientes,text):
             tkMessageBox.showerror("Error",u"El archivo está bloqueado por otro programa! Vuelva a intentarlo cuando no esté bloqueado.")
         else:
             try:
-                programa_pedidos.processfiles(listacompra,pendientes,output, log=lambda *args: textwidgetlog(*args,text=text))
+                programa_pedidos.processfiles(unico,pendientes,listacompra,output, log=lambda *args: textwidgetlog(*args,text=text))
             except Exception as e:
                 textwidgetlog("ERROR",unicode(e),text=text)
 
@@ -120,27 +127,28 @@ class ListaCompraFrame(Frame):
         Frame.__init__(self,*args,**kwargs)
 
         # set an offset of rows to show file inmputs
-        brow=1
+        brow=1; count=3
         for i in range(brow): self.grid_rowconfigure(i,weight=0,minsize=25)
 
         # show actual file inputs widgets
-        listacompra = FileFrame(self,u"Lista compra",dtitle=u"Seleccione el fichero lista de compra",row=brow)
+        unico = FileFrame(self,u"Fichero único",dtitle=u"Seleccione el fichero único",row=brow)
         pendientes = FileFrame(self,u"Pedidos pendientes",dtitle=u"Seleccione el fichero de pedidos pendientes",row=brow+1)
+        listacompra = FileFrame(self,u"Lista compra",dtitle=u"Seleccione el fichero lista de compra",row=brow+2)
 
         # configure input widgets rows
-        for i in range(2): self.grid_rowconfigure(brow+i,weight=0,pad=5)
+        for i in range(count): self.grid_rowconfigure(brow+i,weight=0,pad=5)
 
 
         # Console log widget to show feedback to the user
         text = ReadOnlyText(self,height=11)
-        text.grid(row=0,column=4,rowspan=4,padx=20, pady=10)
+        text.grid(row=0,column=4,rowspan=count+brow+1,padx=20, pady=10)
 
 
         # Configure "cross files" button with callback
         calcular = Button(self,text=u"Cruzar archivos",
-                    command=lambda u=listacompra,p=pendientes,t=text: calcCommand(u,p,t))
-        calcular.grid(row=brow+2,column=0,columnspan=3,sticky='E')
-        self.grid_rowconfigure(brow+2, weight=1)
+                    command=lambda l=listacompra,u=unico,p=pendientes,t=text: calcCommand(l,u,p,t))
+        calcular.grid(row=brow+3,column=0,columnspan=3,sticky='E')
+        self.grid_rowconfigure(brow+3, weight=1)
 
 
 if __name__=="__main__":
