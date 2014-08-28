@@ -40,10 +40,10 @@ def processfiles(unico,pendientes,compra,output,log=print,outputext="xlsx"):
         raise
 
     query = '''
-        SELECT DISTINCT cod_nac, compute_0017, cod_ec, fichero_unico.observaciones
+        SELECT  cod_nac, compute_0017, cod_ec, fichero_unico.observaciones
 
         FROM
-        (fichero_unico INNER JOIN lista_de_compra ON codigo_articulo_hsc=lista_de_compra.cod_nac)
+        (lista_de_compra LEFT JOIN fichero_unico ON fichero_unico.generico_de_centro=lista_de_compra.cod_ec)
         LEFT JOIN pedidos_pendientes
         ON pedidos_pendientes.GC=lista_de_compra.cod_ec
             and
