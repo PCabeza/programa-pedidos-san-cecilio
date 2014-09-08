@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
+'''
+Common functionality for writing and reading files
+'''
+
 from __future__ import print_function # use print as a function
 
-# depends on packages: xlrd xlswriter and optionally chardet
 import xlrd, xlsxwriter as xlsxw # read and write xls(x) files
 
-import sqlite3, datetime, re, tempfile, os, sys, codecs
+import sqlite3, re, codecs
 from os import path
 from math import ceil
+
 
 ##################################
 # DML general statements for mysql
@@ -33,6 +37,7 @@ XLRD_TYPES = [ "INT", "TEXT", "BOOLEAN", "REAL", "REAL", "TEXT" ]
 
 def nfunc(i,v,collision_dict=None):
     "naming method for db table columns, collision_dict is used to rename duplacate names"
+
     name = unicode(v).replace(' ','_').lower() if v else 'row%d' % i
     if collision_dict is None: pass
     elif name in collision_dict:
@@ -43,6 +48,7 @@ def nfunc(i,v,collision_dict=None):
 
 def tfunc(fname,collision_dict=None):
     "naming method for db tables"
+
     return path.splitext(path.basename(nfunc(0,fname,collision_dict=collision_dict)))[0]
 
 
@@ -158,6 +164,7 @@ def parseCustomFile(fname,gbeg,gheaders,gtypes,conn,basetable=None):
 
 def wincheckwriteperm(file):
     '''Check if a file has write permission compatible with win 8'''
+
     if not path.exists(file):
         return True
 
@@ -171,6 +178,7 @@ def wincheckwriteperm(file):
 
 def readvalidate(file):
     '''Validates that a file is readable'''
+
     if not path.exists(file): return 1
     elif not file: return 2
     else: return 0

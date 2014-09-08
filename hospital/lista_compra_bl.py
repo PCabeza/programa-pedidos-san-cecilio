@@ -1,21 +1,38 @@
 # -*- coding: utf-8 -*-
+'''
+Business logic for lista de compra
+'''
+
 from __future__ import print_function # use print as a function
-
-# depends on packages: xlrd xlswriter and optionally chardet
-import xlrd, xlsxwriter as xlsxw # read and write xls(x) files
-
-import sqlite3, datetime, re, tempfile, os, sys, codecs
-from os import path
-from math import ceil
-
+import sqlite3, tempfile, os
 import programa_pedidos_common as common
 
-#################################
-# Actual main processing of files
-#################################
+
+def writecrossxls(output,c,log=print):
+    "Wrapper for common.writecxlsfromsqlite to add extra configuration"
+
+    money_format=u'0.00 €'
+    colstyle = {
+        "precio final envase": {"num_format": money_format},
+        "coste/ud con iva": {"num_format": money_format},
+        "coste/linea": {"num_format": money_format},
+    }
+
+    formula_cells = {
+        "coste/linea": {
+            "formula": "={0}*{1}",
+            "parameters": ["cantidad_a_pedir","coste/ud_con_iva"],
+            "valor": lambda n0,n1: n0*n1,
+        },
+    }
+
+    common.writecxlsfromsqlite(output,c,colstyle=colstyle,formula_cells=formula_cells,log=log)
+
+
 
 def processfiles(unico,pendientes,compra,output,log=print,outputext="xlsx"):
     '''Main process of reading files and writing the output'''
+
     temp = tempfile.mkstemp()
     log("INFO",u"Creando archivo sqlite temporal:",temp[1])
     conn = sqlite3.connect(temp[1])
@@ -41,10 +58,26 @@ def processfiles(unico,pendientes,compra,output,log=print,outputext="xlsx"):
 
     query = '''
         SELECT  cod_nac as codigo_nacional,
-                cod_ec as gc,
-                '02018_2' as almacen_farmacia,
-                compute_0017 as cantidad,
-                fichero_unico.observaciones
+                cod_ec as generico_de_centro,
+                '02018_2' as almacen_farmacia, -- constant column
+                compute_0017 as cantidad_a_pedir,
+
+                -- these columns are from file mercurio
+                -- código,
+                -- artículo,
+                -- "stk.min",
+                -- "stk.max",
+                -- "stk.act",
+                -- "cant.",
+                CAST(NULL AS REAL) as "coste/linea",
+
+                fichero_unico.observaciones,
+                especialidad_farmaceutica,
+                "unidades/caja",
+                precio_final_envase,
+                "coste/ud_con_iva",
+                laboratorio,
+                fichero_unico.descripcion_tipo_envase
 
         FROM
         (lista_de_compra LEFT JOIN fichero_unico ON fichero_unico.generico_de_centro=lista_de_compra.cod_ec)
@@ -60,7 +93,8 @@ def processfiles(unico,pendientes,compra,output,log=print,outputext="xlsx"):
 
 
     log("INFO",u"Escribiendo el archivo %s..." % output)
-    common.writecxlsfromsqlite(output,c,log=log)
+    #common.writecxlsfromsqlite(output,c,log=log)
+    writecrossxls(output,c,log=log)
 
     # some cleanup
     log("INFO",u"Eliminando archivos temporales...")

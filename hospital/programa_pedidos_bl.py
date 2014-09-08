@@ -1,21 +1,16 @@
 # -*- coding: utf-8 -*-
+'''
+Business logic for programa_pedidos
+'''
+
 from __future__ import print_function # use print as a function
-
-# depends on packages: xlrd xlswriter and optionally chardet
-import xlrd, xlsxwriter as xlsxw # read and write xls(x) files
-
-import sqlite3, datetime, re, tempfile, os, sys, codecs
-from os import path
+import sqlite3, tempfile, os
+import programa_pedidos_common as common
 from math import ceil
 
-import programa_pedidos_common as common
-
-#################################
-# Actual main processing of files
-#################################
-
-# TODO: improve width system
 def writecrossxls(output,c,log=print):
+    "Wrapper for common.writecxlsfromsqlite to add extra configuration"
+
     money_format=u'0.00 €'
     colstyle = {
         "precio final envase": {"num_format": money_format},
@@ -41,6 +36,7 @@ def writecrossxls(output,c,log=print):
 
 def processfiles(unico,pendientes,mercurio,output,log=print,outputext="xlsx"):
     '''Main process of reading files and writing the output'''
+
     temp = tempfile.mkstemp()
     log("INFO",u"Creando archivo sqlite temporal:",temp[1])
     conn = sqlite3.connect(temp[1])
@@ -67,12 +63,26 @@ def processfiles(unico,pendientes,mercurio,output,log=print,outputext="xlsx"):
     common.parseCustomFile(mercurio,groups,headers,htypes,conn,basetable="fichero_mercurio")
 
     query = '''
-        SELECT código,artículo,"stk.min","stk.max","stk.act","cant.",
+        SELECT
+               codigo_nacional,
+               generico_de_centro,
+               '02018_2' as almacen_farmacia, -- constant column added
                CAST(NULL AS REAL) as cantidad_a_pedir,
+
+               código,
+               artículo,
+               "stk.min",
+               "stk.max",
+               "stk.act",
+               "cant.",
                CAST(NULL AS REAL) as "coste/linea",
 
-               fichero_unico.observaciones,generico_de_centro,codigo_nacional,especialidad_farmaceutica,
-               "unidades/caja",precio_final_envase,"coste/ud_con_iva",laboratorio,
+               fichero_unico.observaciones,
+               especialidad_farmaceutica,
+               "unidades/caja",
+               precio_final_envase,
+               "coste/ud_con_iva",
+               laboratorio,
                fichero_unico.descripcion_tipo_envase
 
         FROM

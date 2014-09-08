@@ -3,8 +3,8 @@ from ttk import *
 
 import sys,os
 
-from lista_compra_gui import ListaCompraFrame
-from programa_pedidos_gui import PedidosPendientesFrame
+from lista_compra_frame import ListaCompraFrame
+from programa_pedidos_frame import PedidosPendientesFrame
 from hospital_gui_common import *
 
 if __name__=='__main__':
@@ -21,16 +21,17 @@ if __name__=='__main__':
         try: v.iconbitmap(os.path.join(base_path,'icon.ico'))
         except TclError: pass
 
-    #scheduledimage=PhotoImage(...)
+    # create notebook widget
     note = Notebook(v)
 
+    # Create and add both frames
     listacompratab = ListaCompraFrame(note)
     pedidospendtab = PedidosPendientesFrame(note)
 
     note.add(listacompratab, text = "Lista de compra")
     note.add(pedidospendtab, text = "Pedidos pendientes")
 
-    note.pack()
+    note.pack() # the the notebook widget
 
 
     # Actual loop and center widgets
