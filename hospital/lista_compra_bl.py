@@ -40,12 +40,16 @@ def processfiles(unico,pendientes,compra,output,log=print,outputext="xlsx"):
         raise
 
     query = '''
-        SELECT  cod_nac, compute_0017, cod_ec, fichero_unico.observaciones
+        SELECT  cod_nac as codigo_nacional,
+                cod_ec as gc,
+                '02018_2' as almacen_farmacia,
+                compute_0017 as cantidad,
+                fichero_unico.observaciones
 
         FROM
         (lista_de_compra LEFT JOIN fichero_unico ON fichero_unico.generico_de_centro=lista_de_compra.cod_ec)
         LEFT JOIN pedidos_pendientes
-        ON pedidos_pendientes.GC=lista_de_compra.cod_ec
+        ON pedidos_pendientes.gc=lista_de_compra.cod_ec
             and
             pedidos_pendientes.referencia_fabricante=lista_de_compra.cod_nac
         WHERE pedidos_pendientes.primary_id IS NULL

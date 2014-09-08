@@ -72,7 +72,8 @@ def processfiles(unico,pendientes,mercurio,output,log=print,outputext="xlsx"):
                CAST(NULL AS REAL) as "coste/linea",
 
                fichero_unico.observaciones,generico_de_centro,codigo_nacional,especialidad_farmaceutica,
-               "unidades/caja",precio_final_envase,"coste/ud_con_iva",laboratorio
+               "unidades/caja",precio_final_envase,"coste/ud_con_iva",laboratorio,
+               fichero_unico.descripcion_tipo_envase
 
         FROM
             (fichero_unico INNER JOIN fichero_mercurio_data ON codigo_articulo_hsc="código")
