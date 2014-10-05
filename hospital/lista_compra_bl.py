@@ -21,7 +21,7 @@ def writecrossxls(output,c,log=print):
     formula_cells = {
         "coste/linea": {
             "formula": "={0}*{1}",
-            "parameters": ["cantidad_a_pedir","coste/ud_con_iva"],
+            "parameters": ["cantidad","coste/ud_con_iva"],
             "valor": lambda n0,n1: n0*n1,
         },
     }
@@ -57,10 +57,10 @@ def processfiles(unico,pendientes,compra,output,log=print,outputext="xlsx"):
         raise
 
     query = '''
-        SELECT  cod_nac as codigo_nacional,
-                cod_ec as generico_de_centro,
-                '02018_2' as almacen_farmacia, -- constant column
-                compute_0017 as cantidad_a_pedir,
+        SELECT  cod_nac as "codigo%5Fnacional",
+                cod_ec as gc,
+                '02018_2' as "almacen%5Ffarmacia", -- constant column
+                compute_0017 as cantidad,
 
                 -- these columns are from file mercurio
                 -- código,

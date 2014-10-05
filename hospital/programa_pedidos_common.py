@@ -7,7 +7,7 @@ from __future__ import print_function # use print as a function
 
 import xlrd, xlsxwriter as xlsxw # read and write xls(x) files
 
-import sqlite3, re, codecs
+import sqlite3, re, codecs, urllib
 from os import path
 from math import ceil
 
@@ -200,7 +200,7 @@ def writecxlsfromsqlite(output,c,colstyle={},formula_cells={},log=print):
 
     # get, prepare  and write header row
     description = [i[0] for i in c.description]
-    headers=[ i.replace("_"," ").decode('utf8') for i in description]
+    headers=[ urllib.unquote(i.replace("_"," ")).decode('utf8').upper() for i in description]
     for i,v in enumerate(headers):
         worksheet.write(0,i,v,hstyle)
     worksheet.freeze_panes(1, 0) # freeze first row and no column

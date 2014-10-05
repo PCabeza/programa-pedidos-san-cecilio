@@ -64,10 +64,10 @@ def processfiles(unico,pendientes,mercurio,output,log=print,outputext="xlsx"):
 
     query = '''
         SELECT
-               codigo_nacional,
-               generico_de_centro,
-               '02018_2' as almacen_farmacia, -- constant column added
-               CAST(NULL AS REAL) as cantidad_a_pedir,
+               codigo_nacional as "codigo%5Fnacional",
+               generico_de_centro as gc,
+               '02018_2' as "almacen%5Ffarmacia", -- constant column added
+               CAST(NULL AS REAL) as cantidad,
 
                código,
                artículo,
