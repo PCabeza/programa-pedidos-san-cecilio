@@ -27,16 +27,15 @@ Para compilarlo todo se incluye el script compile.py, que se ejecuta
 con:
 
      python compile.py -s cruces
-
-
 Hay otras opciones que se pueden consultar con ```-h```
 
 Estructura
 ----------
 
 Hay dos programas que pueden funcionar de forma independiente:
-	- programa_pedidos
-	- lista_compra
+
+- programa_pedidos
+- lista_compra
 
 Ambos tienen un archivo *\*_bl.py* que contiene el proceso de cruce y un archivo *\*_frame.py* que contiene la interfaz para usarlo.
 
