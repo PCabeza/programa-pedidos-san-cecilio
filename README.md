@@ -37,7 +37,7 @@ Hay dos programas que pueden funcionar de forma independiente:
 - programa_pedidos
 - lista_compra
 
-Ambos tienen un archivo *\*_bl.py* que contiene el proceso de cruce y un archivo *\*_frame.py* que contiene la interfaz para usarlo.
+Ambos tienen un archivo **_bl.py* que contiene el proceso de cruce y un archivo **_frame.py* que contiene la interfaz para usarlo.
 
 Las funciones de lectura, escritura de los archivos .xls y otras funciones comunes están en la librería común *hospital_common.py*.
 
