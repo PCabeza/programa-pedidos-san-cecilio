@@ -11,7 +11,7 @@ from idlelib.WidgetRedirector import WidgetRedirector
 
 import sys, os, traceback
 
-import programa_pedidos_bl as programa_pedidos, programa_pedidos_common as common
+import programa_pedidos_bl as programa_pedidos, hospital_common as common
 from hospital_gui_common import *
 
 

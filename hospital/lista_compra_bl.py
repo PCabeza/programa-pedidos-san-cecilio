@@ -5,7 +5,7 @@ Business logic for lista de compra
 
 from __future__ import print_function # use print as a function
 import sqlite3, tempfile, os
-import programa_pedidos_common as common
+import hospital_common as common
 
 
 def writecrossxls(output,c,log=print):
