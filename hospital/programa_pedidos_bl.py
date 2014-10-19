@@ -21,10 +21,10 @@ def writecrossxls(output,c,log=print):
     formula_cells = {
         "coste/linea": {
             "formula": "={0}*{1}",
-            "parameters": ["cantidad_a_pedir","coste/ud_con_iva"],
+            "parameters": ["cantidad","coste/ud_con_iva"],
             "valor": lambda n0,n1: n0*n1,
         },
-        "cantidad_a_pedir": {
+        "cantidad": {
             "formula": "=ROUNDUP({0}/{1},0)*{1}",
             "parameters": ["cant.","unidades/caja"],
             "valor": lambda n0,n1: ceil(n0/n1)*n1,
