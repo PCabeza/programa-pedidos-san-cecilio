@@ -1,4 +1,7 @@
 '''
+programa_pedidos_san_cecilio v1.0 | (c) 2014 Pablo Cabeza 
+license: modified BSD
+
 Common utilities for the graphic interface
 '''
 

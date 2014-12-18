@@ -8,7 +8,7 @@ from setuptools import setup
 
 setup(
     name='programa pedidos hospital',
-    version='0.1.0',
+    version='1.0',
     author='Pablo Cabeza',
     author_email='josepablocg@gmail.com',
     # packages=['programa_pedidos_bl'],

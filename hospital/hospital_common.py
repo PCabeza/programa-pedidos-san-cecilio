@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 '''
+programa_pedidos_san_cecilio v1.0 | (c) 2014 Pablo Cabeza 
+license: modified BSD
+
 Common functionality for writing and reading files
+
 '''
 
 from __future__ import print_function # use print as a function
