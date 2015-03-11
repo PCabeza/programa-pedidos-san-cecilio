@@ -11,9 +11,22 @@ from __future__ import print_function # use print as a function
 
 import xlrd, xlsxwriter as xlsxw # read and write xls(x) files
 
-import sqlite3, re, codecs, urllib
+
+import sqlite3, re, codecs, urllib, logging, sys
 from os import path
 from math import ceil
+
+######################################
+# Configure common logging facilites #
+######################################
+
+logger = logging.getLogger(__name__)
+_out_hdlr = logging.StreamHandler(sys.stdout)
+_out_hdlr.setFormatter(logging.Formatter('[%(asctime)s] %(message)s'))
+#_out_hdlr.setLevel(logging.INFO)
+logger.addHandler(_out_hdlr)
+
+logger.setLevel(logging.ERROR) # Change to logging.DEBUG when debugging
 
 
 ##################################
@@ -106,6 +119,8 @@ def parseCustomFile(fname,gbeg,gheaders,gtypes,conn,basetable=None):
     It creates 2 tables, one for the actual data and one for groups.
     '''
 
+    logger.debug("parsing custom mercury file")
+
     # Table names
     gtablename = (basetable or tfunc(fname))+"_group"
     dtablename = (basetable or tfunc(fname))+"_data"
@@ -118,19 +133,24 @@ def parseCustomFile(fname,gbeg,gheaders,gtypes,conn,basetable=None):
     dinsert = INSERT.format(dtablename,','.join(['"%s"'%nfunc(i,v) for i,v in enumerate(gheaders)]+['"group_ref"']))
 
 
-    conn.execute(gschema); conn.execute(dschema) # Create both tables
+    conn.execute(gschema) # Create group table
+    logger.debug("Creating schema: %s" % gschema)
 
+    conn.execute(dschema) # Create data table
+    logger.debug("Creating schema: %s" % dschema)
 
     # Various constants for file processiong
     reheader = re.compile(''.join([r'\s*%s:\s*(.+)'%s for s in gbeg]),re.U|re.I) # header match regex
     ngroup = 0; newgroup = False; offsets = None; grouprow = None
 
-    with codecs.open(fname, "rb", "latin-1") as f:
+    with codecs.open(fname, "rb", "utf-8") as f:
         for line in f: # process the file line-wise
 
             header = reheader.match(line) # try to match group header with regex
 
             if header is not None: ## it is a header
+                logger.debug("Group Header: %s" % str(header.groups()))
+
                 ngroup+=1; newgroup=True
                 conn.execute(ginsert % ','.join(\
                     [unicode(ngroup)] + ["'%s'"%m.strip() for m in header.groups()]))
@@ -144,16 +164,22 @@ def parseCustomFile(fname,gbeg,gheaders,gtypes,conn,basetable=None):
                 def offsetgen(off):
                     i=0; prev = -1
                     for i in range(len(off)):
-                        n = int(ceil((off[i]+len(gheaders[i])+off[i+1]+1)/2)) if i!=len(off)-1 else None
+                        n = off[i+1]-1 if i!=len(off)-1 else None
+                        # n = int(ceil((off[i]+len(gheaders[i])+off[i+1]+1)/2)) if i!=len(off)-1 else None
                         yield (prev+1, n)
                         prev = n
 
+                logger.debug(line)
                 off = [line.find(g) for g in gheaders]
+                logger.debug("headers: %s found in %s" % (gheaders,off))
+
                 offsets = list(offsetgen(off))
+                logger.debug("offsets: %s" % offsets)
 
             else: ## standard data line
                 # get data using offsets pairs
                 data = [line[b:e].strip() for b,e in offsets]
+                logger.debug("read data: %s" % data)
 
                 # render and execute insert
                 insert = dinsert % ','.join(["'%s'"%d for d in data]+[unicode(ngroup)])

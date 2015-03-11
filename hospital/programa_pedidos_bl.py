@@ -59,8 +59,8 @@ def processfiles(unico,pendientes,mercurio,output,log=print,outputext="xlsx"):
 
     # Generate schema information for mercurio file
     groups = ['Grupo','Sistemas']
-    headers = [u"Código",u"Artículo",u"Almacén Rep.",u"Ubic.Ext",u"Unidad.Ext",u"Stk.Min",u"Stk.Max",u"Rep.Fija",u"Stk.Act",u"Cant."]
-    htypes  = ['TEXT'   , 'TEXT'    , 'TEXT'        , 'TEXT'    , 'REAL'       , 'REAL'  , 'REAL'   , 'REAL'    , 'REAL'    ,'INT'  ]
+    headers = [u"Código",u"Artículo",u"Cant.",u"Rep.Fija",u"Stk.Mín",u"Stk.Máx",u"Stk.Act",u"Almacén Rep.",u"UnidUbic.Ext"]
+    htypes  = ['TEXT'   , 'TEXT'    ,'INT'   , 'INT'     , 'REAL'   , 'REAL'   , 'REAL'    ,'INT'         , 'TEXT']
 
     log("INFO",u"Leyendo %s..." % mercurio)
     common.parseCustomFile(mercurio,groups,headers,htypes,conn,basetable="fichero_mercurio")
@@ -74,8 +74,8 @@ def processfiles(unico,pendientes,mercurio,output,log=print,outputext="xlsx"):
 
                código,
                artículo,
-               "stk.min",
-               "stk.max",
+               "stk.mín",
+               "stk.máx",
                "stk.act",
                "cant.",
                CAST(NULL AS REAL) as "coste/linea",
