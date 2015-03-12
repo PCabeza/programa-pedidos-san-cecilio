@@ -143,7 +143,7 @@ def parseCustomFile(fname,gbeg,gheaders,gtypes,conn,basetable=None):
     reheader = re.compile(''.join([r'\s*%s:\s*(.+)'%s for s in gbeg]),re.U|re.I) # header match regex
     ngroup = 0; newgroup = False; offsets = None; grouprow = None
 
-    with codecs.open(fname, "rb", "utf-8") as f:
+    with codecs.open(fname, "rb", "latin-1") as f:
         for line in f: # process the file line-wise
 
             header = reheader.match(line) # try to match group header with regex
