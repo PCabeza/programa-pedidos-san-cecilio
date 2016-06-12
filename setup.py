@@ -11,7 +11,7 @@ setup(
     version='1.0',
     author='Pablo Cabeza',
     author_email='josepablocg@gmail.com',
-    # packages=['programa_pedidos_bl'],
+    # packages=['hospital'],
     # package_dir={'programa_pedidos_bl':'hospital'}
 
     # scripts=['hospital/programa_pedidos_gui.py'],

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-programa_pedidos_san_cecilio v1.0 | (c) 2014 Pablo Cabeza 
+programa_pedidos_san_cecilio v1.0 | (c) 2014 Pablo Cabeza
 license: modified BSD
 
 Business logic for programa_pedidos

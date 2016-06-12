@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-programa_pedidos_san_cecilio v1.0 | (c) 2014 Pablo Cabeza 
+programa_pedidos_san_cecilio v1.0 | (c) 2014 Pablo Cabeza
 license: modified BSD
 
 Business logic for lista de compra
@@ -103,4 +103,5 @@ def processfiles(unico,pendientes,compra,output,log=print,outputext="xlsx"):
     log("INFO",u"Eliminando archivos temporales...")
     conn.close()
     os.close(temp[0])
-    os.unlink(temp[1])
+    log(temp[1])
+    # os.unlink(temp[1])
