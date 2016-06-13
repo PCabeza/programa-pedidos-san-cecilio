@@ -3,26 +3,32 @@
 # https://caremad.io/blog/setup-vs-requirement/
 # http://guide.python-distribute.org/creation.html
 
-#from distutils.core import setup
+# TODO refactor everything to comply with pep8 style
+# TODO refactor compile.py to make it more more understadable (change it to pyinstaller-compile.py)
+
+
 from setuptools import setup
 
 setup(
-    name='programa pedidos hospital',
+    name='programa-pedidos-hospital',
     version='1.0',
     author='Pablo Cabeza',
     author_email='josepablocg@gmail.com',
-    # packages=['hospital'],
-    # package_dir={'programa_pedidos_bl':'hospital'}
+    packages=['hospital'],
+    package_data={"hospital": ["data/icon.ico"]},
 
-    # scripts=['hospital/programa_pedidos_gui.py'],
+    entry_points={
+        "console_scripts": ["programa_pedidos=hospital.hospital_gui:main"],
+    },
     description='Programa para hospital de Granada',
 
     install_requires=[
-       "xlrd",
-       "xlsxwriter",
-       "pyttk"
-	#    'pywin32',
-	#    'pyinstaller'
-       # "chardet"
+        "xlrd",
+        "xlsxwriter",
+        "pyttk",
+        "Pillow",
+        # 'pywin32',
+        # 'pyinstaller'
+        # "chardet"
     ],
 )

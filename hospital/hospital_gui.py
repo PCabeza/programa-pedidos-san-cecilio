@@ -8,23 +8,25 @@ from ttk import *
 import sys
 import os
 
-from lista_compra_frame import ListaCompraFrame
-from programa_pedidos_frame import PedidosPendientesFrame
-from hospital_gui_common import *
+from .lista_compra_frame import ListaCompraFrame
+from .programa_pedidos_frame import PedidosPendientesFrame
+from .hospital_gui_common import *
+
+from pkgutil import get_data
+from PIL import Image as PILImage, ImageTk
+from StringIO import StringIO
 
 
 def main():
-    # If using pyinstaller, static assets are in sys._MEIPASS instead of .
-    try: base_path = sys._MEIPASS
-    except Exception: base_path = os.path.abspath("./compile")
 
     # define root window and its properties
     v = Tk()
     v.title("Programa de cruces")
     v.resizable(0, 0)
-    if base_path:
-        try: v.iconbitmap(os.path.join(base_path, 'icon.ico'))
-        except TclError: pass
+
+    icon = PILImage.open(StringIO(get_data("hospital", "data/icon.ico")))
+    icontk = ImageTk.PhotoImage(icon)
+    v.tk.call("wm", "iconphoto", v._w, icontk)
 
     # create notebook widget
     note = Notebook(v)

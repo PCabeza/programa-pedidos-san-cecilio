@@ -25,7 +25,7 @@ if args.target == 'programa_pedidos':
 elif args.target == 'lista_compra':
 	script = "hospital\\lista_compra_gui.py"
 	spec = "lista_compra_gui.spec"
-elif args.target == 'cruces':
+else: #elif args.target == 'cruces':
 	script = "hospital\\hospital_gui.py"
 	spec = "hospital_gui.spec"
 
@@ -34,3 +34,5 @@ command = [baseprogram]+(arguments+[script] if not args.spec_file else [spec])
 
 print ' '.join(command)
 call(command)
+
+# c:\\Python27\\Scripts\\pyinstaller.ex --noconsole --onefile --icon=hospital-icon.ico hospital_gui.spec
