@@ -68,18 +68,7 @@ class FileFrame(object):
             self.validation.error()
 
 
-class ReadOnlyText(Text):
-
-    def __init__(self, *args, **kwargs):
-        Text.__init__(self, *args, **kwargs)
-        self.redirector = WidgetRedirector(self)
-        self.insert = self.redirector.register(
-            "insert", lambda *args, **kw: "break")
-        self.delete = self.redirector.register(
-            "delete", lambda *args, **kw: "break")
-
-
-def calcCommand(listacompra, unico, pendientes, text):
+def calcCommand(listacompra, unico, pendientes, log):
     '''Callback for the "cross files" button that validates files and process them'''
 
     listacompra = listacompra.file.get()
@@ -131,12 +120,12 @@ def calcCommand(listacompra, unico, pendientes, text):
         else:
             try:
                 programa_pedidos.processfiles(
-                    unico, pendientes, listacompra, output, log=lambda *args: textwidgetlog(*args, text=text))
+                    unico, pendientes, listacompra, output, log=lambda *args: log(*args))
             except Exception as e:
                 if os.isatty(sys.stdin.fileno()):
                     traceback.print_exc()  # print traceback on console
                 err = str(e).decode('utf-8')
-                textwidgetlog("ERROR", err, text=text)
+                log("ERROR", err)
 
                 functionmap = {
                     'writecrossxls': u"Error al escribir el archivo de cruce",
@@ -159,12 +148,13 @@ def calcCommand(listacompra, unico, pendientes, text):
 
             msg_exito = u'Proceso de cruce finalizado con éxito!'
             tkMessageBox.showinfo('Proceso finalizado', msg_exito)
-            textwidgetlog("INFO", msg_exito, text=text)
+            log("INFO", msg_exito)
 
 
 class ListaCompraFrame(Frame):
 
     def __init__(self, *args, **kwargs):
+        log = kwargs.pop('log')
         Frame.__init__(self, *args, **kwargs)
 
         # set an offset of rows to show file inmputs
@@ -185,13 +175,9 @@ class ListaCompraFrame(Frame):
         for i in range(count):
             self.grid_rowconfigure(brow + i, weight=0, pad=5)
 
-        # Console log widget to show feedback to the user
-        text = ReadOnlyText(self, height=11)
-        text.grid(row=0, column=4, rowspan=count + brow + 1, padx=20, pady=10)
-
         # Configure "cross files" button with callback
         calcular = Button(self, text=u"Cruzar archivos",
-                          command=lambda l=listacompra, u=unico, p=pendientes, t=text: calcCommand(l, u, p, t))
+                          command=lambda l=listacompra, u=unico, p=pendientes, log=log: calcCommand(l, u, p, log))
         calcular.grid(row=brow + 3, column=0, columnspan=3, sticky='E')
         self.grid_rowconfigure(brow + 3, weight=1)
 

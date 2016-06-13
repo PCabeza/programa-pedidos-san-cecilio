@@ -1,3 +1,4 @@
+
 '''
 programa_pedidos_san_cecilio v1.0 | (c) 2014 Pablo Cabeza
 license: modified BSD
@@ -28,17 +29,24 @@ def main():
     icontk = ImageTk.PhotoImage(icon)
     v.tk.call("wm", "iconphoto", v._w, icontk)
 
+    # logging text area
+    logtext = ReadOnlyText(v, height=12)
+
+    def logging(*args, **kwargs):
+        textwidgetlog(*args, text=logtext, **kwargs)
+
     # create notebook widget
     note = Notebook(v)
 
     # Create and add both frames
-    listacompratab = ListaCompraFrame(note)
-    pedidospendtab = PedidosPendientesFrame(note)
+    listacompratab = ListaCompraFrame(note, log=logging)
+    pedidospendtab = PedidosPendientesFrame(note, log=logging)
 
     note.add(listacompratab, text="Lista de compra")
     note.add(pedidospendtab, text="Pedidos pendientes")
 
-    note.pack()  # the the notebook widget
+    note.grid(row=0, padx=5, pady=(2, 5))  # the the notebook widget
+    logtext.grid(row=1, padx=5, pady=(2, 5))
 
     # Actual loop and center widgets
     centrar(v)

@@ -5,7 +5,8 @@ license: modified BSD
 Common utilities for the graphic interface
 '''
 
-from Tkinter import END
+from Tkinter import END, Text
+from idlelib.WidgetRedirector import WidgetRedirector
 
 
 def centrar(ventana):
@@ -30,3 +31,14 @@ def textwidgetlog(level, *args, **kwargs):
     else:
         text.insert(END, ' '.join(args) + '\n')
     text.master.update_idletasks()
+
+
+class ReadOnlyText(Text):
+
+    def __init__(self, *args, **kwargs):
+        Text.__init__(self, *args, **kwargs)
+        self.redirector = WidgetRedirector(self)
+        self.insert = self.redirector.register(
+            "insert", lambda *args, **kw: "break")
+        self.delete = self.redirector.register(
+            "delete", lambda *args, **kw: "break")
