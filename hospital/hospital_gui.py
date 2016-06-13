@@ -30,7 +30,10 @@ def main():
     v.tk.call("wm", "iconphoto", v._w, icontk)
 
     # logging text area
-    logtext = ReadOnlyText(v, height=12)
+    logframe = Frame(v, bd=1, relief=GROOVE)
+
+    logtext = ReadOnlyText(logframe, height=10, width=10, bd=0)
+    logtext.pack(side=TOP, fill=BOTH, expand=1)
 
     def logging(*args, **kwargs):
         textwidgetlog(*args, text=logtext, **kwargs)
@@ -42,11 +45,14 @@ def main():
     listacompratab = ListaCompraFrame(note, log=logging)
     pedidospendtab = PedidosPendientesFrame(note, log=logging)
 
-    note.add(listacompratab, text="Lista de compra")
-    note.add(pedidospendtab, text="Pedidos pendientes")
+    note.add(listacompratab, text="Lista de compra", sticky="E")
+    note.add(pedidospendtab, text="Pedidos pendientes", sticky="E")
 
-    note.grid(row=0, padx=5, pady=(2, 5))  # the the notebook widget
-    logtext.grid(row=1, padx=5, pady=(2, 5))
+    note.grid(row=0, padx=8, pady=(8, 0), sticky="WE")  # the the notebook widget
+
+    print listacompratab.winfo_reqwidth(),
+    logframe.grid(row=1, padx=8, pady=(0, 8), sticky="WE")
+
 
     # Actual loop and center widgets
     centrar(v)

@@ -11,7 +11,7 @@ from setuptools import setup
 
 setup(
     name='programa-pedidos-hospital',
-    version='1.0',
+    version='1.1',
     author='Pablo Cabeza',
     author_email='josepablocg@gmail.com',
     packages=['hospital'],

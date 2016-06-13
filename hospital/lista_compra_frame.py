@@ -22,52 +22,6 @@ import hospital.hospital_common as common
 from .hospital_gui_common import *
 
 
-class ReadOnlyEntry(Entry):
-
-    def __init__(self, *args, **kwargs):
-        Entry.__init__(self, *args, **kwargs)
-        self.redirector = WidgetRedirector(self)
-        self.insert = self.redirector.register(
-            "insert", lambda *args, **kw: "break")
-        self.delete = self.redirector.register(
-            "delete", lambda *args, **kw: "break")
-
-
-class FileFrame(object):
-
-    def __init__(self, parent, text, row=0, dtitle=None, filetypes=[], validation=None):
-        # Frame.__init__(self,parent)
-        # self.grid()
-
-        self.parent = parent
-        self.dialogtitle = dtitle
-        self.filetypes = filetypes
-        self.validation = validation
-
-        self.file = StringVar()
-        self.label = Label(parent, text=text + ":")
-        self.fileentry = ReadOnlyEntry(
-            parent, textvariable=self.file, width=40)
-        self.button = Button(parent, text="Examinar",
-                             command=lambda s=self: s.selectfile())
-
-        self.label.grid(row=row, column=0, sticky='E', padx=10)
-        self.fileentry.grid(row=row, column=1)
-        self.button.grid(row=row, column=2, padx=5)
-
-    def selectfile(self):
-        filename = tkFileDialog.askopenfilename(
-            title=self.dialogtitle, filetypes=self.filetypes)
-        valid = 0
-        if self.validation:
-            valid = self.validation.validate(filename)
-
-        if valid == 0:
-            self.file.set(filename)
-        else:
-            self.validation.error()
-
-
 def calcCommand(listacompra, unico, pendientes, log):
     '''Callback for the "cross files" button that validates files and process them'''
 
@@ -109,7 +63,8 @@ def calcCommand(listacompra, unico, pendientes, log):
         outputext = "xlsx"
         output = None
         output = tkFileDialog.asksaveasfilename(title="Seleccione la ubicación donde guardar el archivo final (.%s)" % outputext,
-                                                filetypes=[('Microsoft Excel 2007', '.%s' % outputext)])
+                                                filetypes=[('Microsoft Excel 2007', '.%s' % outputext)],
+                                                defaultextension=outputext)
 
         if not output:
             tkMessageBox.showerror(
@@ -163,47 +118,30 @@ class ListaCompraFrame(Frame):
         for i in range(brow):
             self.grid_rowconfigure(i, weight=0, minsize=25)
 
+        filetypes = [
+            ('Microsoft Excel 97-2003', '.xls'),
+            ('Microsoft Excel 2007', '.xlsx'),
+            ('Todos', '*'),
+        ]
+
         # show actual file inputs widgets
         unico = FileFrame(self, u"Fichero único",
-                          dtitle=u"Seleccione el fichero único", row=brow)
+                          dtitle=u"Seleccione el fichero único", row=brow,
+                          filetypes=filetypes)
         pendientes = FileFrame(self, u"Pedidos pendientes",
-                               dtitle=u"Seleccione el fichero de pedidos pendientes", row=brow + 1)
+                               dtitle=u"Seleccione el fichero de pedidos pendientes", row=brow + 1,
+                               filetypes=filetypes)
         listacompra = FileFrame(
-            self, u"Lista compra", dtitle=u"Seleccione el fichero lista de compra", row=brow + 2)
+            self, u"Lista compra", dtitle=u"Seleccione el fichero lista de compra", row=brow + 2,
+            filetypes=filetypes)
 
         # configure input widgets rows
         for i in range(count):
-            self.grid_rowconfigure(brow + i, weight=0, pad=5)
+            self.grid_rowconfigure(brow + i, weight=0, pad=7)
 
         # Configure "cross files" button with callback
         calcular = Button(self, text=u"Cruzar archivos",
                           command=lambda l=listacompra, u=unico, p=pendientes, log=log: calcCommand(l, u, p, log))
-        calcular.grid(row=brow + 3, column=0, columnspan=3, sticky='E')
+        calcular.grid(row=brow + 3, column=0, columnspan=3, sticky='E',
+                      padx=7, pady=(0, 7))
         self.grid_rowconfigure(brow + 3, weight=1)
-
-
-if __name__ == "__main__":
-
-    # If using pyinstaller, static assets are in sys._MEIPASS instead of .
-    try:
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath("./compile")
-
-    # define root window and its properties
-    v = Tk()
-    v.title("Lista de compra")
-    v.resizable(0, 0)
-    if base_path:
-        try:
-            v.iconbitmap(os.path.join(base_path, 'icon.ico'))
-        except TclError:
-            pass
-
-    # v.grid()
-    mainframe = ListaCompraFrame(v)
-    mainframe.pack()
-
-    # Actual loop and center widgets
-    centrar(v)
-    v.mainloop()
